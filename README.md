@@ -3,4 +3,4 @@ Just like Chromecast Ambient Mode, but for Roku. This is source code for a Roku 
 # Weather data
 To display current weather conditions, an API call to **api.weather.com** is used. The API is hosted by **[IBM Passport Advantage Weather Company Data](https://www.ibm.com/docs/en/environmental-intel-suite?topic=reference-weather-data-apis)**.  
 # Screenshot
-[](https://raw.githubusercontent.com/nstevens1040/AmbientMode/refs/heads/main/.ignore/screenshot.jpg)  
+![](https://raw.githubusercontent.com/nstevens1040/AmbientMode/refs/heads/main/.ignore/screenshot.jpg)  
