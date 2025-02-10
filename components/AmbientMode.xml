@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<component name="AmbientMode" extends="Scene" >
+<script type="text/brightscript" >
+<![CDATA[
+  sub init()
+    m.top.setFocus(true)
+'    m.color = "0xFF0000FF"
+'    m.red = 250
+'    m.green = 0
+'    m.blue = 0
+'    m.greenup = true
+'    m.reddown = false
+'    m.blueup = false
+'    m.greendown = false
+'    m.redup = false
+'    m.bluedown = false
+    m.poster = m.top.findNode("photogrid")
+    m.timeLabel = m.top.findNode("timeLabel")
+    m.dateLabel = m.top.findNode("dateLabel")
+    m.weatherIcon = m.top.findNode("weatherIcon")
+    m.temperatureLabel = m.top.findNode("temperatureLabel")
+    m.temperatureLabel.font.size = 39
+    m.timeLabel.font.size = 39
+    m.pixindex = 0
+    m.connectivityloss = false
+
+    m.dateLabel.text = getdate()
+    m.timeLabel.text = gettime()
+
+    m.timer = createObject("roSGNode", "Timer")
+    m.timer.duration = 0.250
+    m.timer.repeat = true
+    m.timer.observeField("fire", "updateTime")
+    m.top.appendChild(m.timer)
+    m.timer.control = "start"
+
+  ' m.colort = createObject("roSGNode", "Timer")
+  ' m.colort.duration = 0.15
+  ' m.colort.repeat = true
+  ' m.colort.observeField("fire", "getcolor")
+  ' m.top.appendChild(m.colort)
+  ' m.colort.control = "start"
+  
+    m.fetchWeather = createObject("roSGNode", "fetchWeather")
+    m.fetchWeather.observeField("weatherData", "writeWeather")
+    m.fetchWeather.control = "RUN"
+
+    m.wtimer = createObject("roSGNode", "Timer")
+    m.wtimer.duration = 60
+    m.wtimer.repeat = true
+    m.wtimer.observeField("fire", "updateWeather")
+    m.top.appendChild(m.wtimer)
+    m.wtimer.control = "start"
+
+    m.conntime = createObject("roSGNode", "Timer")
+    m.conntime.duration = 10
+    m.conntime.repeat = true
+    m.conntime.observeField("fire", "checkinternet")
+    m.top.appendChild(m.conntime)
+    m.conntime.control = "start"
+
+  end sub
+
+  sub getcolor()
+    if m.greenup
+      if m.green = 250
+        m.greenup = false
+        m.reddown = true
+        print m.color
+      else
+        m.green = m.green + 10
+      end if
+    end if
+    if m.reddown
+      if m.red = 0
+        m.reddown = false
+        m.blueup = true
+        print m.color
+      else
+        m.red = m.red - 10
+      end if
+    end if
+    if m.blueup
+      if m.blue = 250
+        m.blueup = false
+        m.greendown = true
+        print m.color
+      else
+        m.blue = m.blue + 10
+      end if
+    end if
+    if m.greendown
+      if m.green = 0
+        m.greendown = false
+        m.redup = true
+        print m.color
+      else
+        m.green = m.green - 10
+      end if
+    end if
+    if m.redup
+      if m.red = 250
+        m.redup = false
+        m.bluedown = true
+        print m.color
+      else
+        m.red = m.red + 10
+      end if
+    end if
+    if m.bluedown
+      if m.blue = 0
+        m.bluedown = false
+        m.greenup = true
+        print m.color
+      else
+        m.blue = m.blue - 10
+      end if
+    end if
+    r = UCase(StrI(m.red, 16)).trim()
+    if Len(r) = 1
+      r = "0" + r
+    end if
+    g = UCase(StrI(m.green, 16)).trim()
+    if Len(g) = 1
+      g = "0" + g
+    end if
+    b = UCase(StrI(m.blue, 16)).trim()
+    if Len(b) = 1
+      b = "0" + b
+    end if
+    m.color = "0x" + r + g + b + "FF"
+    m.timeLabel.color = m.color
+    m.temperatureLabel.color = m.color
+  end sub
+  
+  sub updateTime()
+    m.timeLabel.text = gettime()
+    m.dateLabel.text = getdate()
+  end sub
+  
+  sub updateWeather()
+    updatePicture()
+    m.fetchWeather = createObject("roSGNode", "fetchWeather")
+    m.fetchWeather.observeField("weatherData", "writeWeather")
+    m.fetchWeather.control = "RUN"
+  end sub
+
+  sub writeWeather()
+    m.content = m.fetchWeather.weatherData
+    if (m.content <> invalid)
+      temperature = m.content.temperature
+      iconuri = "pkg:/images/weather/" + Str(m.content.iconCode).trim() + ".png"
+      print(iconuri)
+      m.weatherIcon.uri = iconuri
+      m.temperatureLabel.text = Str(temperature) + "°F"
+    else
+      return
+    end if
+  end sub
+
+  function updatePicture()
+    photos = [
+      "pkg:/images/28235-3840x2160-desktop-4k-venus-wallpaper-photo.jpg",
+      "pkg:/images/28824-1369x2581-iphone-hd-saturn-wallpaper-image.jpg",
+      "pkg:/images/28997-2560x1440-desktop-hd-neptune-wallpaper-photo.jpg",
+      "pkg:/images/4k-jupiter-wallpaper-image.jpg",
+      "pkg:/images/94972-1125x2436-mobile-hd-uranus-background-photo.jpg",
+      "pkg:/images/98331-1920x1080-desktop-1080p-pluto-background-photo.jpg",
+      "pkg:/images/desktop-hd-mars-background-photo.jpg",
+      "pkg:/images/maldivy-nebo-solnce-zakat.jpg",
+      "pkg:/images/resize_16954869025_4292a1acf5_b_2.jpg",
+      "pkg:/images/resize_236286-2000-auto.jpg",
+      "pkg:/images/resize_269f1e74-ccf2-4bee-91a5-5f90124c6a45.jpg",
+      "pkg:/images/resize_28030-38top-4r-image.jpg",
+      "pkg:/images/resize_a-tranquil-sunset-over-the-ocean-with-a-palm-tree-leaning-o.jpg",
+      "pkg:/images/resize_ab10500c-ac8a-4852-ad7c-9526b43e8e57.jpg",
+      "pkg:/images/resize_aj-FjDaN9WlRLg-unsplash.jpg",
+      "pkg:/images/resize_alex-k-tVUJGXRp1PU-unsplash.jpg",
+      "pkg:/images/resize_amanda-phung-1w2xsyc2wwI-unsplash.jpg",
+      "pkg:/images/resize_beach-island-sunrise-fire-red-gold-1585871-pxhere.com.jpg",
+      "pkg:/images/resize_beach-landscape-sea-tree-water-nature-1161299-pxhere.com.jpg",
+      "pkg:/images/resize_beach-sea-tree-ocean-horizon-sun-1052646-pxhere.com.jpg",
+      "pkg:/images/resize_beautiful-sunset-on-theo.jpg",
+      "pkg:/images/resize_beautiful-sunset-tropical-beach-wit.jpg",
+      "pkg:/images/resize_chris-8iCdRKKoG7g-unsplash.jpg",
+      "pkg:/images/resize_dharmendra-sahu-Ia2Kjtrx8y4-unsplash.jpg",
+      "pkg:/images/resize_diferencias-entre-noch-1024x713.jpg.jpg",
+      "pkg:/images/resize_jailam-rashad-Qe58SmRMcH4-unsplash.jpg",
+      "pkg:/images/resize_jcob-nasyr-ppMxyOhPtd8-unsplash.jpg",
+      "pkg:/images/resize_jono-hirst-9Vnxo0cCR3Q-unsplash.jpg",
+      "pkg:/images/resize_juliana-barquero-sDjyonpaCEc-unsplash.jpg",
+      "pkg:/images/resize_mike-a-yYSnv8meSMY-unsplash.jpg",
+      "pkg:/images/resize_nattu-adnan-atSUvc1hMwk-unsplash.jpg",
+      "pkg:/images/resize_negative-space-vacation-tropical-beach-sunset.jpg",
+      "pkg:/images/resize_nick-kane-eaI3VpRnMbw-unsplash.jpg",
+      "pkg:/images/resize_pe-seth-0L97UPHJi2U-unsplash.jpg",
+      "pkg:/images/resize_pexels-asadphoto-9470489.jpg",
+      "pkg:/images/resize_photo-1460627390041-532a28402358.jpg",
+      "pkg:/images/resize_photo-1502759683299-cdcd6974244f.jpg",
+      "pkg:/images/resize_premium_photo-1681437096361-c5f1e29d6997.jpg",
+      "pkg:/images/resize_punta-cana-sunrise-beach-dominican-travel-1634349-pxhere.com.jpg",
+      "pkg:/images/resize_roberto-nickson-HQMyV8a_4_4-unsplash.jpg",
+      "pkg:/images/resize_rowan-heuvel-U6t80TWJ1DM-unsplash.jpg",
+      "pkg:/images/resize_sea-beach-background-free-photo.jpg",
+      "pkg:/images/resize_secret-travel-guide-ZwZAHHCBIwA-unsplash.jpg",
+      "pkg:/images/resize_silhouette-of-beautiful-sunset-ime-free-photo.jpg",
+      "pkg:/images/resize_sun-fireball-solar-flare-sunlight-87611.jpg",
+      "pkg:/images/resize_teddie-humaam-fPwlA536orM-unsplash.jpg",
+      "pkg:/images/resize_themoon.jpg",
+      "pkg:/images/resize_upgraded-points-KVym2PAn1gA-unsplash.jpg",
+      "pkg:/images/resize_yegor-denisov-yIpU0HMpN0I-unsplash.jpg",
+      "pkg:/images/wp11178589.jpg"
+    ]
+    photo = photos[m.pixindex]
+    print photo
+    post = m.poster
+    postRect = post.boundingRect()
+    centerx = (1366 - postRect.width) / 2
+    centery = (768 - postRect.height) / 2
+    post.translation = [ centerx, centery ]
+    post.uri = photo
+    m.top.setFocus(true)
+    if (m.pixindex > 48)
+      m.pixindex = 0
+    else
+      m.pixindex = m.pixindex + 1
+    end if
+  end function
+
+  function gettime()
+    date = createObject("roDateTime")
+    date.ToLocalTime()
+    h = date.GetHours()
+    hour = 0
+    ampm = "AM"
+    if (h > 12)
+      hour = h - 12
+      ampm = "PM"
+    else
+      if (h = 12)
+        hour = 12
+        ampm = "PM"
+      else
+        if (h = 0)
+          hour = 12
+          ampm = "AM"
+        else
+          hour = h
+          ampm = "AM"
+        end if
+      end if
+    end if
+    minute = date.GetMinutes()
+    if (Len(Str(minute).trim()) = 1)
+      minute = "0" + Str(minute).trim()
+    else
+      minute = Str(minute).trim()
+    end if
+    seconds = date.GetSeconds()
+    if (Len(Str(seconds).trim()) = 1)
+      seconds = "0" + Str(seconds).trim()
+    else
+      seconds = Str(seconds).trim()
+    end if
+    timestamp = Str(hour) + ":" + minute + ":" + seconds + " " + ampm
+    return timestamp
+  end function
+
+  function getdate()
+    months = [
+      "0",
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ]
+    date = createObject("roDateTime")
+    date.ToLocalTime()
+    weekday = date.GetWeekday()
+    month = months[date.GetMonth()]
+    day = date.GetDayOfMonth()
+    year = date.GetYear()
+    datestring = weekday + ", " + month + " " + Str(day).trim() + ", " + Str(year).trim()
+    return datestring
+  end function
+
+  sub checkinternet()
+    m.deviceInfo = CreateObject("roDeviceInfo")
+    m.dport = CreateObject("roMessagePort")
+    m.deviceInfo.SetMessagePort(m.dport)
+    m.deviceInfo.EnableInternetStatusEvent(true)
+    up = m.deviceInfo.GetInternetStatus()
+    if m.connectivityloss
+      if not up
+        return
+      else
+        m.connectivityloss = false
+        m.conntime.control = "stop"
+        init()
+      end if
+    else
+      if not up
+        m.connectivityloss = true
+        photo = "pkg:/images/nosignal.jpg"
+        print photo
+        post = m.poster
+        postRect = post.boundingRect()
+        centerx = (1366 - postRect.width) / 2
+        centery = (768 - postRect.height) / 2
+        post.translation = [ centerx, centery ]
+        post.uri = photo
+        m.top.setFocus(true)
+        m.wtimer.control = "stop"
+        m.weatherIcon.uri = ""
+        m.temperatureLabel.text = ""
+      else
+        return
+      end if
+    end if
+    'if not m.deviceInfo.GetInternetStatus()
+    'else
+    '  if m.connectivityloss
+    '    updateWeather()
+    '    m.connectivityloss = false
+    '    m.conntime.control = "stop"
+    '    init()
+    '  end if
+    'end if
+  end sub
+]]>
+</script>
+<children>
+    <Poster
+      id="photogrid"
+      width="1366"
+      height="768"
+      loadWidth="1366"
+      loadHeight="768"
+      loadSync="true"
+      loadDisplayMode="scaleToZoom"
+      uri="pkg:/images/resize_aj-FjDaN9WlRLg-unsplash.jpg" />
+      <!--blendingEnabled="true"-->
+    <!--Rectangle
+      id="GrayRect"
+      width="440"
+      height="160"
+      translation="[800,500]"
+      color="0x686868FF"
+      opacity="0.75"-->
+      <!-- -->
+      <!--backgroundURI="pkg:/images/gray_rect_440x160.png"-->
+    <Group
+      id="RectGroup"
+      width="440"
+      height="160"
+      translation="[800,500]">
+      <!--      translation="[10, 10]"-->
+        <Poster
+          id="GrayRect"
+          width="440"
+          height="160"
+          uri="pkg:/images/gray_rect_440x160.png" />
+        <Label
+          id="timeLabel"
+          translation="[180, 35]"
+          monospacedDigits="true"
+          font="font:LargeBoldSystemFont"
+          color="0xFFFFFFFF"
+          opacity="1"
+          text="12:00:00 AM"/>
+        <Poster
+          id="weatherIcon"
+          uri="pkg:/images/sunny.png"
+          width="64"
+          height="64"
+          opacity="1"
+          translation="[20, 10]" />
+        <Label
+          id="temperatureLabel"
+          translation="[80, 35]"
+          font="font:LargeBoldSystemFont"
+          monospacedDigits="true"
+          color="0xFFFFFFFF"
+          opacity="1"
+          text="72°F" />
+        <Label
+          id="dateLabel"
+          translation="[20, 110]"
+          monospacedDigits="true"
+          font="font:LargeBoldSystemFont"
+          color="0xFFFFFFFF"
+          opacity="1"
+          text="Thursday, January 1, 1970"/>
+    </Group>
+    <!--/Rectangle-->
+</children>
+</component>

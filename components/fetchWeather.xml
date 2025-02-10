@@ -1,0 +1,112 @@
+<component name="fetchWeather" extends="Task" >
+  <interface>
+    <!--field id="content" type="node"/-->
+    <field id="weatherData" type="assocarray"/>
+  </interface>
+  <script type = "text/brightscript" >
+    <![CDATA[
+ 
+    sub init()
+      m.top.functionName = "fetchWeather"
+    end sub
+
+    sub fetchWeather()
+    ' content = createObject("roSGNode", "ContentNode")
+      timeout = 1500
+      num_retries = 1
+      http = createObject("roUrlTransfer")
+      port = CreateObject("roMessagePort")
+      http.setUrl("https://api.weather.com/v3/wx/observations/current?apiKey=e1f10a1e78da46f5b10a1e78da96f525&geocode=42.4935302%2C-87.9003771&language=en-US&units=e&format=json")
+      http.SetMessagePort(port)
+      http.SetRequest("GET")
+      http.SetCertificatesFile("common:/certs/ca-bundle.crt")
+      http.AddHeader("Content-Type", "application/json")
+      http.AddHeader("X-Roku-Reserved-Dev-Id","")
+      http.EnableHostVerification(true)
+      http.EnablePeerVerification(true)
+      http.InitClientCertificates()
+      http.RetainBodyOnError(true)
+      while num_retries > 0
+        if (http.AsyncGetToString())
+          event = wait(timeout, http.GetPort())
+          ' print event
+          if type(event) = "roUrlEvent"
+            dd =  event.GetString()
+            code = event.GetResponseCode()
+            ' print code
+            if code = 200
+              print "HTTPS data:" + dd
+              print "HTTPS code:" + Str(code)
+              m.top.weatherData = parseJson(dd)
+              num_retries = 0
+              'return dd
+            else
+              print "HTTPS data:" + dd
+              print "HTTPS code:" + Str(code)
+              timeout = timeout * 2
+              num_retries = num_retries - 1
+              print "HTTPS New try: " + Str(num_retries)
+            endif
+          else
+            timeout = timeout * 2
+            num_retries = num_retries - 1
+            print "HTTPS New try: " + Str(num_retries)
+          endif
+        endif
+      end while
+      ' response = http.getToString()
+      ' m.top.weatherData = parseJson(response)
+      if m.top.weatherData=invalid
+        while m.top.weatherData=invalid
+          http = createObject("roUrlTransfer")
+          port = CreateObject("roMessagePort")
+          http.setUrl("https://api.weather.com/v3/wx/observations/current?apiKey=e1f10a1e78da46f5b10a1e78da96f525&geocode=42.4935302%2C-87.9003771&language=en-US&units=e&format=json")
+          http.SetMessagePort(port)
+          http.SetRequest("GET")
+          http.SetCertificatesFile("common:/certs/ca-bundle.crt")
+          http.AddHeader("Content-Type", "application/json")
+          http.AddHeader("X-Roku-Reserved-Dev-Id","")
+          http.EnableHostVerification(true)
+          http.EnablePeerVerification(true)
+          http.InitClientCertificates()
+          http.RetainBodyOnError(true)
+          while num_retries > 0
+            if (http.AsyncGetToString())
+              event = wait(timeout, http.GetPort())
+                print event
+                  if type(event) = "roUrlEvent"
+                    dd =  event.GetString()
+                    code = event.GetResponseCode()
+                    print code
+                    if code = 200
+                      print "HTTPS data:" + dd
+                      print "HTTPS code:" + Str(code)
+                      m.top.weatherData = parseJson(dd)
+                      num_retries = 0
+                      ' return dd
+                    else
+                      print "HTTPS data:" + dd
+                      print "HTTPS code:" + Str(code)
+                      timeout = timeout * 2
+                      num_retries = num_retries - 1
+                      print "HTTPS New try: " + Str(num_retries)
+                    endif
+                  else
+                    timeout = timeout * 2
+                    num_retries = num_retries - 1
+                    print "HTTPS New try: " + Str(num_retries)
+                  endif
+                endif
+              end while
+              ' response = http.getToString()
+              ' m.top.weatherData = parseJson(response)
+            exit while
+          end while
+        end if
+        ' m.top.content = weatherData
+      end sub
+    ]]>
+ 
+  </script>
+ 
+</component>
